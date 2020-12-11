@@ -50,7 +50,13 @@
               circle
             ></el-button>
             <el-tooltip enterable effect="dark" content="修改" placement="top-start">
-              <el-button type="warning" size="mini" icon="el-icon-star-off" circle></el-button>
+              <el-button
+                @click="setDialogShow(scope.row)"
+                type="warning"
+                size="mini"
+                icon="el-icon-star-off"
+                circle
+              ></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -114,12 +120,44 @@
         <el-button type="primary" @click="editUserInfo">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!-- 分配角色对话框 -->
+    <el-dialog title="分配角色" :visible.sync="showSetDialogVisible" @close="setRoleDialog" width="50%">
+      <div>
+        <p>当前的用户:{{userinfo.username}}</p>
+        <p>当前的角色:{{userinfo.role_name}}</p>
+        <p>
+          分配新角色:
+          <el-select
+            v-model="selectRoleId"
+            placeholder="请选择"
+            filterable
+            allow-create
+            default-first-option
+          >
+            <el-option
+              v-for="(item) in selectOptions"
+              :key="item.id"
+              :value="item.id"
+              :label="item.roleName"
+            ></el-option>
+          </el-select>
+        </p>
+      </div>
+      <!-- 按钮组 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="showSetDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="distributionUser">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 // 导入请求用户相关的接口
-import { apiGetUserList, apiSetUserState, apiAddUsers, apiSearchUsers, apiEditUserState, apiDelUser } from '@/api/user'
+import { apiGetUserList, apiSetUserState, apiAddUsers, apiSearchUsers, apiEditUserState, apiDelUser, apiDistrUser } from '@/api/user'
+//  导入获取角色列表
+import { apiGetRoles } from '@/api/roles'
 export default {
   data () {
     // 自定义手机号规则
@@ -183,7 +221,14 @@ export default {
       // 修改用户对话框的显示与隐藏
       editDialogVisible: false,
       // 查询用户信息对象
-      editUserFrom: {}
+      editUserFrom: {},
+      // 分配角色对话框
+      showSetDialogVisible: false,
+      // 分配角色的用户信息
+      userinfo: {},
+      //选中的角色id值
+      selectRoleId: "",
+      selectOptions: []
     }
   },
   methods: {
@@ -319,6 +364,40 @@ export default {
           message: '已取消删除'
         });
       });
+    },
+    // 修改按钮
+    async setDialogShow (userinfo) {
+      console.log(userinfo);
+      this.showSetDialogVisible = true
+      this.userinfo = userinfo
+      const { data: res } = await apiGetRoles(this.$http)
+      console.log(res, '请求权限');
+      this.selectOptions = res.data
+      // 重新请求数据
+      // this.showSetDialogVisible = false
+    },
+    // 点击确定按钮
+    async distributionUser () {
+      const { data: res } = await apiDistrUser(this.$http, {
+        url: `users/${this.userinfo.id}/role`,
+        data: {
+          rid: this.selectRoleId
+        }
+      })
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.$message({
+        message: res.meta.msg,
+        type: 'success'
+      })
+      console.log(res);
+      this.getUserList()
+      this.showSetDialogVisible = false
+    },
+    // 分配角色对话框
+    setRoleDialog () {
+      this.selectRoleId = ""
+      // 角色信息
+      this.userinfo = ''
     }
   },
   created () {

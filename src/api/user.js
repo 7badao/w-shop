@@ -75,6 +75,18 @@ function apiDelUser(axios, {
   })
 }
 
+// 分配用户角色
+function apiDistrUser(axios, {
+  url,
+  data
+}) {
+  return axios({
+    url: url,
+    method: 'put',
+    data: data
+  })
+}
+
 
 // 按需导出方法
 export {
@@ -84,5 +96,6 @@ export {
   apiAddUsers,
   apiEditUserState,
   apiSearchUsers,
-  apiDelUser
+  apiDelUser,
+  apiDistrUser
 }
