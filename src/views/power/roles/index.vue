@@ -6,7 +6,7 @@
     <el-card>
       <el-row>
         <el-col>
-          <el-button type="primary">添加角色</el-button>
+          <el-button @click="setUserVisibleShow" type="primary">添加角色</el-button>
         </el-col>
       </el-row>
       <!-- 表格区域 -->
@@ -95,6 +95,32 @@
         <el-button type="primary" @click="allotRights">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 添加角色按钮 -->
+    <el-dialog
+      title="添加角色"
+      @close="closeSetUserVisibile"
+      :visible.sync="setUserVisible"
+      width="50%"
+    >
+      <el-form
+        :model="setUserForm"
+        :rules="setUserRules"
+        ref="setUserFormRef"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="setUserForm.roleName"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model="setUserForm.roleDesc"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setUserVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addUser">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -102,16 +128,34 @@
 // 导入面包屑
 import breadcrumb from '@/components/breadcrumb'
 // 导入与角色相关的请求
-import { apiGetRoles, apiDelRoles, apiSetRoles } from '@/api/roles'
+import { apiGetRoles, apiDelRoles, apiSetRoles, apiAddRoles } from '@/api/roles'
 // 导入获取所有权限列表数据
 import { apiGetRights } from '@/api/rights'
 export default {
   data () {
     return {
+      // 添加角色验证规则
+      setUserRules: {
+        roleName: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' },
+          { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+        ],
+      },
+      // 添加角色数据
+      setUserForm: {
+        // 角色名称
+        roleName: "",
+        // 角色描述
+        roleDesc: ""
+      },
+      // 添加角色对话框
+      setUserVisible: false,
       rolesBread: {
         a: "权限管理",
         b: "角色列表"
       },
+      // 添加角色数据
+      ruleForm: {},
       // 表格数据
       rolesList: [],
       // 分配权限对话框的显示与隐藏
@@ -236,6 +280,38 @@ export default {
       this.getRolesList()
       // 关闭对话框
       this.showSetDialogVisible = false
+    },
+    // 添加角色按钮
+    async setUserVisibleShow () {
+      // 开启对话框
+      this.setUserVisible = true
+    },
+    // 关闭添加角色对话框
+    closeSetUserVisibile () {
+      // 清空表单验证规则
+      this.$refs.setUserFormRef.resetFields()
+      // 清空输入框
+      this.setUserForm.roleDesc = ''
+    },
+    // 添加角色
+    addUser () {
+      // 开启表单验证
+      this.$refs.setUserFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await apiAddRoles(this.$http, {
+          data: this.setUserForm
+        })
+        console.log(res, '添加角色');
+        if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
+        this.$message({
+          message: res.meta.msg,
+          type: 'success'
+        })
+        // 关闭弹框
+        this.setUserVisible = false
+        // 请求列表数据
+        this.getRolesList()
+      })
     }
   },
   created () {

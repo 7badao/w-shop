@@ -30,8 +30,20 @@ function apiSetRoles(axios, {
     data: data
   })
 }
+
+// 根据id查询角色
+function apiAddRoles(axios, {
+  data
+}) {
+  return axios({
+    url: 'roles',
+    method: 'post',
+    data: data
+  })
+}
 export {
   apiGetRoles,
   apiDelRoles,
-  apiSetRoles
+  apiSetRoles,
+  apiAddRoles
 }
