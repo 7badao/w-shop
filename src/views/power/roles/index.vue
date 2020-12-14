@@ -61,8 +61,18 @@
         <el-table-column label="角色描述" prop="roleDesc"></el-table-column>
         <el-table-column label="操作" width="300px">
           <template slot-scope="scope">
-            <el-button type="primary" icon="el-icon-edit" size="mini">编辑</el-button>
-            <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+            <el-button
+              @click="editUser(scope.row)"
+              type="primary"
+              icon="el-icon-edit"
+              size="mini"
+            >编辑</el-button>
+            <el-button
+              type="danger"
+              @click="deleteUser(scope.row)"
+              icon="el-icon-delete"
+              size="mini"
+            >删除</el-button>
             <el-button
               type="warning"
               @click="showSetDialog(scope.row)"
@@ -121,6 +131,32 @@
         <el-button type="primary" @click="addUser">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 编辑角色 -->
+    <el-dialog
+      title="编辑角色"
+      @close="closeEditUserVisibile"
+      :visible.sync="editUserVisible"
+      width="50%"
+    >
+      <el-form
+        :model="editUserForm"
+        :rules="editUserRules"
+        ref="editUserFormRef"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="editUserForm.roleName"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model="editUserForm.roleDesc"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editUserVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editUserSure">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -129,6 +165,8 @@
 import breadcrumb from '@/components/breadcrumb'
 // 导入与角色相关的请求
 import { apiGetRoles, apiDelRoles, apiSetRoles, apiAddRoles } from '@/api/roles'
+// 导入与用户相关的
+import { apiDelUser, apiSearchUsers, apiEditUserState } from '@/api/user'
 // 导入获取所有权限列表数据
 import { apiGetRights } from '@/api/rights'
 export default {
@@ -148,14 +186,32 @@ export default {
         // 角色描述
         roleDesc: ""
       },
+      // 编辑角色
+      editUserRules: {
+        roleName: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' },
+          { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+        ],
+      },
+      // 添加角色数据
+      editUserForm: {
+        // 角色名称
+        roleName: "",
+        // 角色描述
+        roleDesc: ""
+      },
       // 添加角色对话框
       setUserVisible: false,
+      // 编辑角色对话框
+      editUserVisible: false,
       rolesBread: {
         a: "权限管理",
         b: "角色列表"
       },
       // 添加角色数据
       ruleForm: {},
+      // 编辑角色数据
+      editFrom: {},
       // 表格数据
       rolesList: [],
       // 分配权限对话框的显示与隐藏
@@ -182,7 +238,6 @@ export default {
     async getRolesList () {
       this.isLoading = true
       const { data: res } = await apiGetRoles(this.$http)
-      console.log(res, '请求角色权限');
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.$message({
         message: res.meta.msg,
@@ -260,7 +315,6 @@ export default {
         // 半选中的
         ...this.$refs.treeRef.getHalfCheckedKeys()
       ]
-      console.log(keys);
       // 将得到的数组拼接 与逗号形式
       const idStr = keys.join(',')
       // 发起角色授权请求
@@ -270,7 +324,6 @@ export default {
           rids: idStr
         }
       })
-      console.log(res, '分配权限');
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.$message({
         message: res.meta.msg,
@@ -301,7 +354,6 @@ export default {
         const { data: res } = await apiAddRoles(this.$http, {
           data: this.setUserForm
         })
-        console.log(res, '添加角色');
         if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
         this.$message({
           message: res.meta.msg,
@@ -312,6 +364,66 @@ export default {
         // 请求列表数据
         this.getRolesList()
       })
+    },
+    // 删除角色
+    deleteUser (row) {
+      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        const { data: res } = await apiDelUser(this.$http, {
+          url: `roles/${row.id}`
+        })
+
+        this.$message({
+          type: 'success',
+          message: res.meta.msg
+        });
+        this.getRolesList()
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+    },
+    // 编辑用户
+    async editUser (row) {
+      this.roleId = row.id
+      // 弹框显示
+      this.editUserVisible = true
+      const { data: res } = await apiSearchUsers(this.$http, {
+        url: `roles/${this.roleId}`,
+      })
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.$message({
+        message: res.meta.msg,
+        type: 'success'
+      })
+      this.editUserForm = res.data
+    },
+    // 编辑确认按钮
+    editUserSure () {
+      // 进行表单验证提交
+      this.$refs.editUserFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await apiEditUserState(this.$http, {
+          url: `roles/${this.roleId}`,
+          data: this.editUserForm
+        })
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message({
+          message: res.meta.msg,
+          type: 'success'
+        })
+        this.editUserVisible = false
+        this.getRolesList()
+      })
+    },
+    // 编辑对话框关闭事件
+    closeEditUserVisibile () {
+      this.$refs.editUserFormRef.resetFields()
     }
   },
   created () {
