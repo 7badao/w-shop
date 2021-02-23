@@ -2,6 +2,7 @@ import Vue from "vue"
 import App from "./App.vue"
 import ElementUI from 'element-ui'
 import VueQuillEditor from 'vue-quill-editor'
+import ZkTable from 'vue-table-with-tree-grid'
 
 import 'quill/dist/quill.core.css' // import styles
 import 'quill/dist/quill.snow.css' // for snow theme
@@ -17,6 +18,8 @@ import store from "./store"
 
 // 导入自己封装的插件对象
 import axiosPlugs from '@/utils/request.js'
+// 注册全局可用组件
+Vue.component('tree-table', ZkTable)
 
 Vue.use(ElementUI);
 Vue.use(axiosPlugs)

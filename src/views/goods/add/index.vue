@@ -157,7 +157,9 @@ export default {
   methods: {
     // 添加商品数据
     async getClass () {
-      const { data: res } = await ApiGetClassification(this.$http)
+      const { data: res } = await ApiGetClassification(this.$http, {
+        params: ''
+      })
       console.log(res, '111');
       this.cateList = res.data
     },
