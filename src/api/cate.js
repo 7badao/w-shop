@@ -50,10 +50,31 @@ function deleteCategories(axios, cateId) {
   })
 }
 
+// 添加动态参数或者静态属性
+function ApiCateIsManyOrOnly(axios, cateID, {
+  data
+}) {
+  return axios({
+    url: `categories/${cateID}/attributes`,
+    method: 'post',
+    data
+  })
+}
+
+// 删除参数
+function deleteCateManyOrOnly(axios, cateId, attrid) {
+  return axios({
+    url: `categories/${cateId}/attributes/${attrid}`,
+    method: 'delete'
+  })
+}
+
 export {
   ApiGetClassification,
   ApiGetCateClassList,
   putCategories,
   ApiAddGoodsCate,
-  deleteCategories
+  deleteCategories,
+  ApiCateIsManyOrOnly,
+  deleteCateManyOrOnly
 }
