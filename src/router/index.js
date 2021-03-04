@@ -1,77 +1,83 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import Vue from 'vue'
+import VueRouter from 'vue-router'
 // 导入 js 文件
 import NProgress from 'nprogress'
 // 导入 css 文件
 import 'nprogress/nprogress.css'
-Vue.use(VueRouter);
+Vue.use(VueRouter)
 
-const routes = [{
+const routes = [
+  {
     path: '/',
     redirect: '/login'
   },
   {
-    path: "/login",
-    name: "Login",
+    path: '/login',
+    name: 'Login',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () =>
-      import("../views/login")
+    component: () => import('../views/login')
   },
   {
-    path: "/home",
-    name: "Home",
-    component: () => import("../views/home"),
+    path: '/home',
+    name: 'Home',
+    component: () => import('../views/home'),
     redirect: '/welcome',
-    children: [{
+    children: [
+      {
         path: '/home',
-        component: () => import("../views/welcome")
+        component: () => import('../views/welcome')
       },
       {
-        path: "/users",
-        name: "Users",
-        component: () => import("../views/users"),
+        path: '/users',
+        name: 'Users',
+        component: () => import('../views/users')
       },
       {
-        path: "/rights",
-        name: "Rights",
-        component: () => import("../views/power/rights"),
+        path: '/rights',
+        name: 'Rights',
+        component: () => import('../views/power/rights')
       },
       {
-        path: "/roles",
-        name: "Roles",
-        component: () => import("../views/power/roles"),
+        path: '/roles',
+        name: 'Roles',
+        component: () => import('../views/power/roles')
       },
       {
-        path: "/goods",
-        name: "Goods",
-        component: () => import("../views/goods/list"),
+        path: '/goods',
+        name: 'Goods',
+        component: () => import('../views/goods/list')
       },
       {
-        path: "/categories",
-        name: "Categories",
-        component: () => import("../views/goods/cate"),
+        path: '/categories',
+        name: 'Categories',
+        component: () => import('../views/goods/cate')
       },
       {
-        path: "/goods/add",
-        name: "GoodsAdd",
-        component: () => import("../views/goods/add"),
+        path: '/goods/add',
+        name: 'GoodsAdd',
+        component: () => import('../views/goods/add')
       },
       {
-        path: "/params",
-        name: "Params",
-        component: () => import("../views/params"),
+        path: '/params',
+        name: 'Params',
+        component: () => import('../views/params')
+      },
+      {
+        path: '/orders',
+        name: 'Orders',
+        component: () => import('../views/orders')
       }
     ]
-  },
-];
+  }
+]
 
 const router = new VueRouter({
-  mode: "history",
+  mode: 'history',
   base: process.env.BASE_URL,
   routes
-});
+})
 
 // 使用全局前置路由守卫判断用户是否登录
 // to从那个路由开始的  from要跳转的目标路由 next 是否执行后续
@@ -106,10 +112,10 @@ router.beforeEach((to, from, next) => {
   // next()
 })
 
-// 全局后置钩子 to from 
+// 全局后置钩子 to from
 router.afterEach(() => {
   // 关闭进度条
   NProgress.done()
 })
 
-export default router;
+export default router
