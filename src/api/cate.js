@@ -42,6 +42,13 @@ function ApiPutCategories(axios, cateID, attrId, { data }) {
     data
   })
 }
+// 删除参数
+function ApiDeleteCategories(axios, cateID, attrId) {
+  return axios({
+    url: `categories/${cateID}/attributes/${attrId}`,
+    method: 'delete'
+  })
+}
 
 // 编辑提交分类
 function putCategories(axios, cateId, { data }) {
@@ -67,5 +74,6 @@ export {
   ApiAddGoodsCate,
   deleteCategories,
   ApiAddCateName,
-  ApiPutCategories
+  ApiPutCategories,
+  ApiDeleteCategories
 }

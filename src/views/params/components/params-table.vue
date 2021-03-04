@@ -8,7 +8,7 @@
         <el-button @click="editFrom(scope.row)" type="primary" size="mini"
           ><i class="el-icon-edit"></i>编辑</el-button
         >
-        <el-button type="danger" size="mini"
+        <el-button type="danger" @click="deleteFrom(scope.row)" size="mini"
           ><i class="el-icon-delete"></i>删除</el-button
         ></template
       >
@@ -22,6 +22,9 @@ export default {
   methods: {
     editFrom(i) {
       this.$emit('editFrom', i)
+    },
+    deleteFrom(i) {
+      this.$emit('deleteFrom', i)
     }
   }
 }

@@ -43,6 +43,7 @@
             :labelText="labelText"
             :tableData="tableData"
             @editFrom="editFrom"
+            @deleteFrom="deleteFrom"
           ></paramsTable>
         </el-tab-pane>
         <el-tab-pane label="静态属性" name="only">
@@ -57,6 +58,7 @@
             :labelText="labelText"
             :tableData="tableData"
             @editFrom="editFrom"
+            @deleteFrom="deleteFrom"
           ></paramsTable>
         </el-tab-pane>
       </el-tabs>
@@ -86,7 +88,8 @@ import {
   ApiGetClassification,
   ApiGetCateClassList,
   ApiAddCateName,
-  ApiPutCategories
+  ApiPutCategories,
+  ApiDeleteCategories
 } from '@/api/cate'
 export default {
   data() {
@@ -245,11 +248,38 @@ export default {
     },
     // 编辑操作
     async editFrom(val) {
-      console.log(val.attr_name, val.attr_id)
       this.editId = val.attr_id
       this.editName = val.attr_name
       // 显示弹框
       this.editDialog()
+    },
+    // 删除按钮操作
+    async deleteFrom(val) {
+      console.log(val)
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          const { data: res } = await ApiDeleteCategories(
+            this.$http,
+            this.cateId,
+            val.attr_id
+          )
+          this.$message({
+            type: 'success',
+            message: res.meta.msg
+          })
+
+          this.getApiGetCateClassList()
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
     }
   },
   computed: {
